@@ -5,7 +5,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apps Portal</title>
+    <title>App Portal</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -53,34 +53,34 @@
     <h1>APP CHOSER</h1>
     
     <div class="grid">
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/ReadingCalender/">
+        <a class="card" href="./ReadingCalender/">
             📅 Reading Calendar *
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/BlockyPuzzle/">
+        <a class="card" href="./BlockyPuzzle/">
             🧩 Block Blast
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/PixelBird/">
+        <a class="card" href="./PixelBird/">
             🐦 Flappy Bird
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/SO/">
+        <a class="card" href="./SO/">
             🛒 Supermarket Organizer *
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/ProjectOngaku/">
+        <a class="card" href="./ProjectOngaku/">
             🎵 Project Ongaku
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/TCG/">
+        <a class="card" href="./TCG/">
             🃏 TCG *
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/SimplySpend/">
+        <a class="card" href="./SimplySpend/">
             💰 Simply Spend
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/EASmaker/">
+        <a class="card" href="./EASmaker/">
             🚨 EAS Maker
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/SketchBook/">
+        <a class="card" href="./SketchBook/">
             🎨 Sketch Book
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/TheRushHourHub/">
+        <a class="card" href="./TheRushHourHub/">
             🍳 The Rush Hour Hub *
         </a>
     </div>
@@ -96,7 +96,7 @@
                     while (curnode.nodeName !== 'A' && curnode.nodeName !== 'HTML') {
                         curnode = curnode.parentNode;
                     }
-                    if ('href' in curnode && curnode.href.indexOf('http') !== -1) {
+                    if ('href' in curnode) {
                         e.preventDefault();
                         location.href = curnode.href;
                     }
@@ -107,3 +107,4 @@
 
 </body>
 </html>
+

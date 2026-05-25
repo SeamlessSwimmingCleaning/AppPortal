@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+<link rel="apple-touch-icon" href="SimplySpendIcon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SimplySpend</title>
+    <style>
+        :root { 
+            --bg: #000; --card: #1c1c1e; --accent: #30d158; --danger: #ff453a; 
+            --text: #ffffff; --gold: #ffd700; --blue: #0a84ff; --orange: #ff9500; --purple: #af52de;
+            --cat-food: #ff9500; --cat-fun: #af52de; --cat-bills: #ff3b30; --cat-other: #8e8e93;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .app-header { padding: 50px 20px 10px 20px; background: #000; flex-shrink: 0; border-bottom: 0.5px solid #222; }
+        .app-header h2 { margin: 0; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        .app-header h1 { margin: 0; font-size: 30px; font-weight: 800; }
+        #main-container { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 15px 20px; }
+        .page { display: none; }
+        .active-page { display: block; }
+        .scroll-buffer { height: 160px; width: 100%; }
+        .card { background: var(--card); border-radius: 16px; padding: 18px; margin-bottom: 15px; border: 0.5px solid #333; }
+        .stat-label { color: #8e8e93; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .stat-value { font-size: 26px; font-weight: bold; margin: 4px 0; }
+        .progress-container { background: #333; height: 10px; border-radius: 5px; margin: 12px 0; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0%; transition: 0.8s ease; }
+        .item-row { background: #2c2c2e; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--blue); }
+        .save-row { border-left-color: var(--orange); flex-direction: column; align-items: flex-start; }
+        .budget-card { border-left: 4px solid var(--accent); }
+        .history-row { border-left-color: #444; margin-bottom: 8px; }
+        .cat-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; margin-top: 4px; display: inline-block; }
+        .badge { display: flex; align-items: center; background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 10px; opacity: 0.15; filter: grayscale(1); transition: 0.4s; }
+        .badge.unlocked { opacity: 1; filter: grayscale(0); border: 1px solid var(--gold); }
+        .badge-icon { font-size: 30px; margin-right: 15px; }
+        .tab-bar { height: 85px; background: rgba(20,20,20,0.96); backdrop-filter: blur(20px); display: flex; border-top: 0.5px solid #333; padding-bottom: 20px; flex-shrink: 0; }
+        .tab { color: #8e8e93; text-align: center; font-size: 8px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .tab.active { color: var(--accent); }
+        .tab-icon { font-size: 18px; margin-bottom: 4px; }
+        input, select { width: 100%; background: #2c2c2e; border: none; color: white; padding: 14px; border-radius: 12px; font-size: 16px; margin-bottom: 10px; outline: none; }
+        .btn { background: var(--accent); border: none; color: white; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn:active { opacity: 0.8; }
+        .secondary-btn { background: #333; margin-top: 5px; }
+        #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: flex-end; }
+        .modal-content { background: var(--card); width: 100%; margin: 20px; padding: 25px; border-radius: 20px; text-align: center; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .delete-btn { color: var(--danger); font-weight: bold; padding: 10px; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <h2>Personal Finance</h2>
+        <h1>SimplySpend</h1>
+    </div>
+
+    <div id="main-container">
+        <div id="home" class="page active-page">
+            <p id="today" style="color: #8e8e93; font-size: 13px; margin-bottom: 15px;"></p>
+            
+            <div class="card">
+                <span class="stat-label">Total Spent This Month</span>
+                <div class="stat-value"><span class="curr">$</span><span id="display-total">0.00</span></div>
+                <div class="progress-container"><div id="spend-bar" class="bar-fill" style="background:var(--accent);"></div></div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span id="limit-text" style="font-size: 12px; color: #8e8e93;">Limit: <span class="curr">$</span>0</span>
+                    <span id="daily-allowance" style="font-size: 12px; color: var(--accent); font-weight:bold;">Daily Left: <span class="curr">$</span>0</span>
+                </div>
+            </div>
+
+            <div class="card budget-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="stat-label" style="color:var(--accent);">Monthly Budget</span>
+                    <span onclick="showModal('modal-budget')" style="color:var(--blue); font-size:12px; font-weight:bold;">CHANGE</span>
+                </div>
+                <div style="font-size:20px; font-weight:bold; margin-top:5px;">
+                    <span class="curr">$</span><span id="budget-val-display">0.00</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <span class="stat-label">Savings Goals</span>
+                <button class="btn" onclick="openSaveModal()" style="background:var(--orange); margin: 10px 0;">+ New Goal</button>
+                <div id="savings-list"></div>
+            </div>
+            
+            <button class="btn" onclick="openResetModal()" style="background:none; border:1px solid var(--danger); color:var(--danger); margin-top:10px;">New Month</button>
+            <div class="scroll-buffer"></div>
+        </div>
+
+        <div id="log" class="page">
+            <h1>Add Expense</h1>
+            <div class="card">
+                <span class="stat-label">Amount Spent</span>
+                <div style="display:flex; gap:10px;">
+                    <input type="number" id="spend-amount" placeholder="0.00" inputmode="decimal">
+                    <button class="btn" onclick="applyTax('spend-amount')" style="width:80px; background:var(--blue); font-size:12px;">+ TAX</button>
+                </div>
+                <input type="text" id="spend-memo" placeholder="Memo">
+                <select id="spend-cat">
+                    <option value="Food">🍔 Food</option><option value="Fun">🎮 Fun</option><option value="Bills">🧾 Bills</option><option value="Other" selected>⚙️ Other</option>
+                </select>
+                <button class="btn" onclick="saveSpend()">Confirm</button>
+            </div>
+        </div>
+
+        <div id="history" class="page">
+            <h1>History</h1>
+            <input type="text" id="history-search" placeholder="Search history..." onkeyup="updateUI()" style="margin-bottom: 15px;">
+            <div id="history-list"></div>
+            <div class="scroll-buffer"></div>
+        </div>
+
+        <div id="coupons" class="page">
+            <h1>Coupons</h1>
+            <div class="card">
+                <span class="stat-label">New Coupon</span>
+                <input type="text" id="cp-store" placeholder="Store Name">
+                <input type="text" id="cp-deal" placeholder="Value (e.g. 10.00 or 15%)">
+                <button class="btn" onclick="addCoupon()" style="background:var(--blue);">Save Coupon</button>
+            </div>
+            <div id="coupon-list"></div>
+            <div class="scroll-buffer"></div>
+        </div>
+
+        <div id="settings" class="page">
+            <h1>Settings</h1>
+            <div class="card">
+                <span class="stat-label">Region & Currency</span>
+                <select id="curr-select" onchange="changeCurrency()">
+                    <option value="$">Dollar ($)</option><option value="€">Euro (€)</option><option value="£">Pound (£)</option><option value="¥">Yen / Yuan (¥)</option><option value="₹">Rupee (₹)</option><option value="₪">Shekel (₪)</option>
+                </select>
+            </div>
+            <div class="card" style="border-color: var(--blue);">
+                <span class="stat-label" style="color: var(--blue);">Currency Converter</span>
+                <input type="number" id="conv-amount" placeholder="Amount..." onkeyup="convertCurrency()">
+                <select id="conv-from" onchange="convertCurrency()"><option value="$">$</option><option value="€">€</option><option value="£">£</option><option value="¥">¥</option></select>
+                <div style="text-align:center; margin:5px 0;">⇅</div>
+                <select id="conv-target" onchange="convertCurrency()"><option value="$">$</option><option value="€">€</option><option value="£">£</option><option value="¥" selected>¥</option></select>
+                <div id="conv-result" style="text-align:center; font-weight:bold; margin-top:10px;">Result: --</div>
+            </div>
+            <button class="btn" onclick="openWipeModal()" style="background:var(--danger);">WIPE ALL DATA</button>
+        </div>
+
+        <div id="awards" class="page">
+            <h1>Trophies</h1>
+            <div id="ach-goal" class="badge"><div class="badge-icon">🎯</div><div><h3>Planner</h3><p>Set a budget goal</p></div></div>
+            <div id="ach-saver" class="badge"><div class="badge-icon">☕</div><div><h3>Super Saver</h3><p>Spent under $5.00 total</p></div></div>
+            <div id="ach-boss" class="badge"><div class="badge-icon">👑</div><div><h3>Budget Boss</h3><p>$20+ under budget</p></div></div>
+            <div id="ach-save-goal" class="badge"><div class="badge-icon">💰</div><div><h3>Goal Setter</h3><p>Created a savings goal</p></div></div>
+            <div id="ach-hist" class="badge"><div class="badge-icon">📜</div><div><h3>Historian</h3><p>Logged 5 expenses</p></div></div>
+            <div id="ach-master" class="badge"><div class="badge-icon">🧙‍♂️</div><div><h3>Coupon Master</h3><p>3+ active coupons</p></div></div>
+            <div id="ach-intl" class="badge"><div class="badge-icon">🌎</div><div><h3>World Traveler</h3><p>Changed currency</p></div></div>
+            <div id="ach-clean" class="badge"><div class="badge-icon">✨</div><div><h3>Fresh Start</h3><p>Reset your spending</p></div></div>
+            <div class="scroll-buffer"></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-content" id="modal-budget" style="display:none;">
+            <h2>Set Monthly Budget</h2>
+            <input type="number" id="goal-input" placeholder="e.g. 1000">
+            <button class="btn" onclick="setGoal()">Update Budget</button><br>
+            <button class="btn secondary-btn" onclick="closeModal()">Cancel</button>
+        </div>
+        <div class="modal-content" id="modal-reset" style="display:none;">
+            <h2>New Month?</h2>
+            <button class="btn" onclick="confirmReset()">Confirm</button><br>
+            <button class="btn secondary-btn" onclick="closeModal()">Cancel</button>
+        </div>
+        <div class="modal-content" id="modal-wipe" style="display:none;">
+            <h2 style="color:var(--danger);">WIPE ALL?</h2>
+            <button class="btn" onclick="confirmWipe()" style="background:var(--danger);">WIPE ALL</button><br>
+            <button class="btn secondary-btn" onclick="closeModal()">Cancel</button>
+        </div>
+        <div class="modal-content" id="modal-save" style="display:none;">
+            <h2>New Savings Goal</h2>
+            <input type="text" id="s-name" placeholder="Item Name">
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="s-target" placeholder="Target Price">
+                <button class="btn" onclick="applyTax('s-target')" style="width:80px; background:var(--blue); font-size:12px;">+ TAX</button>
+            </div>
+            <input type="number" id="s-current" placeholder="Starting Amount">
+            <select id="s-cat">
+                <option value="Food">🍔 Food</option><option value="Fun">🎮 Fun</option><option value="Bills">🧾 Bills</option><option value="Other" selected>⚙️ Other</option>
+            </select>
+            <button class="btn" onclick="addSavingsGoal()" style="background:var(--orange);">Create</button><br>
+            <button class="btn secondary-btn" onclick="closeModal()">Cancel</button>
+        </div>
+        <div class="modal-content" id="modal-topup" style="display:none;">
+            <h2>Add to Goal</h2>
+            <input type="number" id="topup-amount" placeholder="0.00">
+            <button class="btn" onclick="confirmTopUp()" style="background:var(--orange);">Add</button><br>
+            <button class="btn secondary-btn" onclick="closeModal()">Cancel</button>
+        </div>
+        <div class="modal-content" id="modal-coupon-select" style="display:none;">
+            <h2>Select Coupon</h2>
+            <div id="coupon-selector-list"></div>
+            <button class="btn secondary-btn" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab active" onclick="showPage('home')" id="tab-home"><span class="tab-icon">📊</span>Home</div>
+        <div class="tab" onclick="showPage('log')" id="tab-log"><span class="tab-icon">➕</span>Log</div>
+        <div class="tab" onclick="showPage('history')" id="tab-history"><span class="tab-icon">📜</span>History</div>
+        <div class="tab" onclick="showPage('coupons')" id="tab-coupons"><span class="tab-icon">🏷️</span>Coupons</div>
+        <div class="tab" onclick="showPage('settings')" id="tab-settings"><span class="tab-icon">⚙️</span>Settings</div>
+        <div class="tab" onclick="showPage('awards')" id="tab-awards"><span class="tab-icon">🏆</span>Awards</div>
+    </div>
+
+    <script>
+        let total = parseFloat(localStorage.getItem('total')) || 0;
+        let goal = parseFloat(localStorage.getItem('goal')) || 0;
+        let coupons = JSON.parse(localStorage.getItem('coupons')) || [];
+        let savingsArr = JSON.parse(localStorage.getItem('savingsArr')) || [];
+        let historyArr = JSON.parse(localStorage.getItem('historyArr')) || [];
+        let currentSymbol = localStorage.getItem('currSymbol') || '$';
+        let activeGoalId = null;
+
+        const rates = { "$": 1, "€": 0.92, "£": 0.79, "¥": 150.0 };
+
+        function showPage(p) {
+            document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active-page'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(p).classList.add('active-page');
+            document.getElementById('tab-' + p).classList.add('active');
+        }
+
+        function showModal(id) {
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.querySelectorAll('.modal-content').forEach(m => m.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        function applyTax(id) {
+            let v = parseFloat(document.getElementById(id).value);
+            if (v > 0) document.getElementById(id).value = (v * 1.10).toFixed(2);
+        }
+
+        function convertCurrency() { 
+            let v = parseFloat(document.getElementById('conv-amount').value);
+            let f = document.getElementById('conv-from').value;
+            let t = document.getElementById('conv-target').value;
+            if (v) {
+                let res = (v / rates[f]) * rates[t];
+                document.getElementById('conv-result').innerText = "Result: " + t + res.toFixed(2);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('total', total); 
+            localStorage.setItem('goal', goal);
+            localStorage.setItem('historyArr', JSON.stringify(historyArr));
+            localStorage.setItem('savingsArr', JSON.stringify(savingsArr));
+            localStorage.setItem('coupons', JSON.stringify(coupons));
+            localStorage.setItem('currSymbol', currentSymbol);
+        }
+
+        function saveSpend() {
+            let a = parseFloat(document.getElementById('spend-amount').value);
+            let m = document.getElementById('spend-memo').value || "Expense";
+            let c = document.getElementById('spend-cat').value;
+            if (a > 0) {
+                total += a;
+                historyArr.unshift({ id: Date.now(), amt: a, memo: m, cat: c, date: new Date().toLocaleDateString() });
+                saveData(); updateUI(); showPage('home');
+                document.getElementById('spend-amount').value = "";
+            }
+        }
+
+        function openSaveModal() { showModal('modal-save'); }
+        function addSavingsGoal() {
+            let n = document.getElementById('s-name').value;
+            let t = parseFloat(document.getElementById('s-target').value);
+            let c = parseFloat(document.getElementById('s-current').value) || 0;
+            let cat = document.getElementById('s-cat').value;
+            if (n && t) { savingsArr.push({ id: Date.now(), n, t, c, cat }); saveData(); updateUI(); closeModal(); }
+        }
+
+        function openTopUp(id) { activeGoalId = id; showModal('modal-topup'); }
+        function confirmTopUp() {
+            let amt = parseFloat(document.getElementById('topup-amount').value);
+            if (amt > 0) {
+                savingsArr = savingsArr.map(s => {
+                    if (s.id === activeGoalId) {
+                        let nC = s.c + amt;
+                        if (nC >= s.t) historyArr.unshift({ id: Date.now(), amt: s.t, memo: "Goal Done: " + s.n, cat: s.cat, date: new Date().toLocaleDateString() });
+                        return { ...s, c: nC };
+                    }
+                    return s;
+                });
+                saveData(); updateUI(); closeModal();
+            }
+        }
+
+        function openCouponSelector(id) {
+            activeGoalId = id;
+            let list = document.getElementById('coupon-selector-list');
+            list.innerHTML = coupons.length ? "" : "<p style='color:#666;'>No coupons saved.</p>";
+            coupons.forEach(c => {
+                list.innerHTML += `<div class="item-row" onclick="applyCouponToGoal('${c.d}')"><div><strong>${c.s}</strong><br><small>${c.d}</small></div></div>`;
+            });
+            showModal('modal-coupon-select');
+        }
+
+        function applyCouponToGoal(deal) {
+            savingsArr = savingsArr.map(s => {
+                if (s.id === activeGoalId) {
+                    let disc = deal.includes('%') ? s.t * (parseFloat(deal.replace('%',''))/100) : parseFloat(deal);
+                    return { ...s, t: Math.max(0, s.t - (disc || 0)) };
+                }
+                return s;
+            });
+            saveData(); updateUI(); closeModal();
+        }
+
+        function addCoupon() {
+            let s = document.getElementById('cp-store').value;
+            let d = document.getElementById('cp-deal').value;
+            if (s && d) { coupons.push({ id: Date.now(), s, d }); saveData(); updateUI(); }
+        }
+
+        function setGoal() { 
+            let val = parseFloat(document.getElementById('goal-input').value);
+            if (!isNaN(val)) { goal = val; saveData(); updateUI(); closeModal(); }
+        }
+
+        function confirmReset() { total = 0; saveData(); updateUI(); closeModal(); }
+        function confirmWipe() { localStorage.clear(); location.reload(); }
+        function openResetModal() { showModal('modal-reset'); }
+        function openWipeModal() { showModal('modal-wipe'); }
+        function changeCurrency() { currentSymbol = document.getElementById('curr-select').value; saveData(); updateUI(); }
+
+        function deleteItem(type, id) {
+            if (type === 'savings') { savingsArr = savingsArr.filter(i => i.id !== id); }
+            else if (type === 'history') {
+                let item = historyArr.find(i => i.id === id);
+                if (item) total -= item.amt;
+                historyArr = historyArr.filter(i => i.id !== id);
+            }
+            else { coupons = coupons.filter(i => i.id !== id); }
+            saveData(); updateUI();
+        }
+
+        function updateUI() {
+            document.querySelectorAll('.curr').forEach(e => e.innerText = currentSymbol);
+            document.getElementById('display-total').innerText = total.toFixed(2);
+            document.getElementById('budget-val-display').innerText = goal.toFixed(2);
+            document.getElementById('limit-text').innerText = "Limit: " + currentSymbol + goal.toFixed(2);
+            
+            let days = (new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate() - new Date().getDate()) + 1;
+            let dL = (goal - total) > 0 ? (goal - total) / days : 0;
+            document.getElementById('daily-allowance').innerText = "Daily Left: " + currentSymbol + dL.toFixed(2);
+            
+            let p = goal > 0 ? (total/goal)*100 : 0;
+            document.getElementById('spend-bar').style.width = Math.min(p, 100) + "%";
+
+            // History with search
+            let search = document.getElementById('history-search').value.toLowerCase();
+            let hL = document.getElementById('history-list'); hL.innerHTML = "";
+            let filteredHistory = historyArr.filter(h => h.memo.toLowerCase().includes(search));
+            filteredHistory.forEach(h => {
+                let col = h.cat === 'Food' ? 'var(--cat-food)' : h.cat === 'Fun' ? 'var(--cat-fun)' : h.cat === 'Bills' ? 'var(--cat-bills)' : 'var(--cat-other)';
+                hL.innerHTML += `<div class="item-row history-row"><div><strong>${currentSymbol}${h.amt.toFixed(2)}</strong><br><small>${h.memo}</small><br><span class="cat-tag" style="background:${col}">${h.cat}</span></div><div style="display:flex; align-items:center;"><div style="font-size:10px; color:#888; margin-right:10px;">${h.date}</div><div class="delete-btn" onclick="deleteItem('history', ${h.id})">✕</div></div></div>`;
+            });
+
+            // Savings Goals
+            let sL = document.getElementById('savings-list'); sL.innerHTML = "";
+            savingsArr.forEach(s => {
+                let isDone = s.c >= s.t;
+                let perc = (s.c/s.t)*100;
+                sL.innerHTML += `<div class="item-row save-row" style="opacity:${isDone ? '0.4' : '1'}">
+                    <div style="width:100%; display:flex; justify-content:space-between;"><strong>${s.n} ${isDone ? '✅' : ''}</strong><div><span onclick="openCouponSelector(${s.id})" style="color:var(--blue); padding:5px;">COUPON</span><span onclick="openTopUp(${s.id})" style="color:var(--accent); padding:5px;">ADD</span><span onclick="deleteItem('savings', ${s.id})" style="color:var(--danger); padding:5px;">✕</span></div></div>
+                    <div>${currentSymbol}${s.c.toFixed(2)} / ${currentSymbol}${s.t.toFixed(2)}</div>
+                    <div class="progress-container" style="width:100%"><div class="bar-fill" style="width:${Math.min(perc,100)}%; background:var(--orange);"></div></div>
+                </div>`;
+            });
+
+            // Trophies logic remains fully active
+            if (goal > 0) document.getElementById('ach-goal').classList.add('unlocked');
+            if (total > 0 && total < 5) document.getElementById('ach-saver').classList.add('unlocked');
+            if (goal > 0 && (goal - total) >= 20) document.getElementById('ach-boss').classList.add('unlocked');
+            if (savingsArr.length > 0) document.getElementById('ach-save-goal').classList.add('unlocked');
+            if (historyArr.length >= 5) document.getElementById('ach-hist').classList.add('unlocked');
+            if (coupons.length >= 3) document.getElementById('ach-master').classList.add('unlocked');
+            if (currentSymbol !== '$') document.getElementById('ach-intl').classList.add('unlocked');
+        }
+
+        document.getElementById('today').innerText = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+        updateUI();
+    </script>
+</body>
+</html>

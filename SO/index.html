@@ -205,6 +205,13 @@
 </div>
 
 <script>
+    // Force reset to portal home screen if app was freshly booted
+if (window.navigator.standalone && !sessionStorage.getItem('portalActive')) {
+    window.location.href = '../';
+} else if (window.navigator.standalone) {
+    sessionStorage.setItem('portalActive', 'true');
+}
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let musicStarted = false;
     let isMuted = false;

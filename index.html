@@ -88,6 +88,11 @@
     <p class="text"> * IF THE APP HAS A STAR ITS NOT COMPATIBLE WITH IPHONE * </p>
 
     <script>
+        // Session flag to reset back to main screen on fresh launch
+        if (window.navigator.standalone) {
+            sessionStorage.setItem('portalActive', 'true');
+        }
+
         (function(document, navigator, standalone) {
             if ((standalone in navigator) && navigator[standalone]) {
                 var curnode, location = document.location;

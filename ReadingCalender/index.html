@@ -229,6 +229,13 @@
 </div>
 
 <script>
+    // Force reset to portal home screen if app was freshly booted
+if (window.navigator.standalone && !sessionStorage.getItem('portalActive')) {
+    window.location.href = '../';
+} else if (window.navigator.standalone) {
+    sessionStorage.setItem('portalActive', 'true');
+}
+
     let currentDate = new Date();
     // Structure holds: {'YYYY-MM-DD': {goal: 30, done: 15, page: 42}}
     let trackerData = JSON.parse(localStorage.getItem('bookCalendarData')) || {};
@@ -368,6 +375,7 @@
 
     renderCalendar();
 </script>
+    
 
 </body>
 </html>

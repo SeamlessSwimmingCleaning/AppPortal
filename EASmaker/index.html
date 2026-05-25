@@ -188,7 +188,7 @@ New Jersey;
 AT 12:11 AM
 ON APR 15, 2014
 EFFECTIVE UNTIL 1:11 AM.
-MESSAGE FROM NJ000.</textarea>
+</textarea>
 
         <button onclick="triggerPrankDelay()">ARM AND START BROADCAST</button>
     </div>
@@ -209,6 +209,14 @@ MESSAGE FROM NJ000.</textarea>
     </div>
 
     <script>
+
+        // Force reset to portal home screen if app was freshly booted
+if (window.navigator.standalone && !sessionStorage.getItem('portalActive')) {
+    window.location.href = '../';
+} else if (window.navigator.standalone) {
+    sessionStorage.setItem('portalActive', 'true');
+}
+        
         let audioCtx = null;
         let oscillators = [];
         let gainNode = null;

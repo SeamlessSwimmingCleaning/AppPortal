@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentic Cable Terminal EAS</title>
+    <style>
+        body {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        #setup-panel {
+            background: #222;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+        h2 { margin-top: 0; color: #ffeb3b; text-align: center; font-family: sans-serif; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; }
+        input, select, textarea {
+            width: 100%; padding: 10px; box-sizing: border-box;
+            background: #333; color: white; border: 1px solid #555; border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            margin-top: 20px; width: 100%; padding: 15px; background: #d32f2f;
+            color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;
+            font-size: 16px; letter-spacing: 1px;
+        }
+        button:hover { background: #b71c1c; }
+        
+        /* Countdown Overlay */
+        #countdown-overlay {
+            display: none; position: fixed; top:0; left:0; width:100vw; height:100vh;
+            background: black; z-index: 999; justify-content: center; align-items: center;
+            font-size: 120px; font-weight: bold; color: #ff3d00; font-family: sans-serif;
+        }
+
+        /* 16:9 MONITOR DISPLAY CONTAINER LAYER */
+        #eas-screen {
+            width: 100%; max-width: 960px; aspect-ratio: 16/9;
+            background: #000000; position: relative; overflow: hidden;
+            display: none;
+            filter: blur(0.4px); 
+        }
+
+        /* CARD COMPONENT FRAME WITH TRUE SOLID OFFSET GRAPHIC DROP SHADOW */
+        #alert-card-frame {
+            position: absolute;
+            top: 4%; bottom: 4%; left: 6%; right: 6%;
+            background-color: #3b5a88; 
+            border: 18px solid #cc1111; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            padding: 0px !important; /* Zero padding to let fonts touch boundaries */
+            
+            /* TRUE RETRO CABLE BLOCK DROP SHADOW SIMULATION */
+            filter: drop-shadow(24px 24px 0px rgba(0, 0, 0, 0.95));
+        }
+
+        /* ==========================================================================
+           FULLSCREEN COMPRESSION OVERRIDES - EDGE TO EDGE FORCING
+           ========================================================================== */
+        #eas-screen:fullscreen #alert-card-frame {
+            top: 0 !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            border-width: 25px !important; 
+            filter: none !important; /* Disables drop shadow when container expands edge to edge */
+        }
+        #eas-screen:-webkit-full-screen #alert-card-frame {
+            top: 0 !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            border-width: 25px !important;
+            filter: none !important;
+        }
+        #eas-screen:fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+        }
+        #eas-screen:-webkit-full-screen {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+        }
+
+        /* ==========================================================================
+           ULTRA-MAXIMIZED FONT SCALING (TIGHTLY SNUG IN FULLSCREEN)
+           ========================================================================== */
+        #alert-header {
+            font-size: 8.8vh; /* Maximized layout size scales tightly to border constraints */
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            text-transform: uppercase;
+            width: 100%;
+            letter-spacing: -0.5px;
+            
+            /* CORE CHARACTERS FACE DROP SHADOW */
+            text-shadow: 4px 4px 0px #000000;
+        }
+
+        #alert-sub-header {
+            font-size: 7.2vh; /* Maximized layout size scales tightly to border constraints */
+            font-weight: bold;
+            color: #ffffff; 
+            text-align: center; 
+            margin: 0 0 1vh 0;
+            padding: 0;
+            text-transform: uppercase;
+            width: 100%;
+            letter-spacing: -0.5px;
+            
+            /* CORE CHARACTERS FACE DROP SHADOW */
+            text-shadow: 4px 4px 0px #000000;
+        }
+
+        #main-alert-body {
+            font-size: 5.9vh; /* Massive snug paragraph lines filling out text regions */
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center; 
+            line-height: 1.15;
+            white-space: pre-wrap;
+            text-transform: uppercase;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            letter-spacing: -0.5px;
+            
+            /* CORE CHARACTERS FACE DROP SHADOW */
+            text-shadow: 4px 4px 0px #000000;
+        }
+
+        .control-layout-wrap { display: flex; flex-direction: column; width: 100%; max-width: 960px; gap: 5px; }
+        #fullscreen-btn { display: none; background: #0288d1; margin-top: 15px; }
+        #fullscreen-btn:hover { background: #01579b; }
+        #stop-btn { display: none; background: #444; margin-top: 15px;}
+    </style>
+</head>
+<body>
+
+    <!-- Countdown Display -->
+    <div id="countdown-overlay">3</div>
+
+    <!-- Configuration Menu -->
+    <div id="setup-panel">
+        <h2>Global EAS Broadcast Maker</h2>
+        
+        <label for="region-select">Select Broadcast Region:</label>
+        <select id="region-select" onchange="updateRegionPresets()">
+            <option value="US">United States (EAS - Red/Black Banner, Dual Tone)</option>
+            <option value="UK">United Kingdom (BBC Wartime - Dark Blue, Single Low Tone)</option>
+            <option value="JP">Japan (J-Alert - Grey/Blue, Chime Harmonic Tones)</option>
+            <option value="EU">Euro Inter-Nation (Civil Defense - High/Low Alternating Sirens)</option>
+        </select>
+
+        <label for="alert-title">Main White Header Line:</label>
+        <input type="text" id="alert-title" value="Emergency Alert Details">
+
+        <label for="alert-sub">Second Line Text (White Text):</label>
+        <input type="text" id="alert-sub" value="A CIVIL AUTHORITY HAS ISSUED">
+
+        <label for="alert-msg">Remaining Paragraph Details:</label>
+        <textarea id="alert-msg" rows="7">A REQUIRED MONTHLY TEST FOR
+THE FOLLOWING COUNTIES/AREAS:
+New Jersey;
+AT 12:11 AM
+ON APR 15, 2014
+EFFECTIVE UNTIL 1:11 AM.
+MESSAGE FROM NJ000.</textarea>
+
+        <button onclick="triggerPrankDelay()">ARM AND START BROADCAST</button>
+    </div>
+
+    <!-- Output Canvas Panel Layout -->
+    <div id="eas-screen">
+        <div id="alert-card-frame">
+            <div id="alert-header"></div>
+            <div id="alert-sub-header"></div>
+            <div id="main-alert-body"></div>
+        </div>
+    </div>
+    
+    <!-- Universal Control layout deck -->
+    <div class="control-layout-wrap">
+        <button id="fullscreen-btn" onclick="goFullscreen()">ENTER FULL SCREEN (TV MODE)</button>
+        <button id="stop-btn" onclick="stopEAS()">KILL TRANSMISSION (STOP)</button>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let oscillators = [];
+        let gainNode = null;
+        let sirenInterval = null;
+
+        const presets = {
+            US: { header: "Emergency Alert Details", sub: "A CIVIL AUTHORITY HAS ISSUED" },
+            UK: { header: "BBC Emergency Broadcast", sub: "MINISTRY OF DEFENCE DIRECTIVE" },
+            JP: { header: "J-ALERT DATA SYSTEM", sub: "GOVERNMENT DISASTER RELAY ACTIVE" },
+            EU: { header: "Civil Protection Detail", sub: "CIVIL DEFENSE RELAY IN PROGRESS" }
+        };
+
+        function updateRegionPresets() {
+            const region = document.getElementById('region-select').value;
+            document.getElementById('alert-title').value = presets[region].header;
+            document.getElementById('alert-sub').value = presets[region].sub;
+        }
+
+        function triggerPrankDelay() {
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+
+            document.getElementById('setup-panel').style.display = 'none';
+            const overlay = document.getElementById('countdown-overlay');
+            overlay.style.display = 'flex';
+            
+            let count = 3;
+            overlay.innerText = count;
+
+            let countdownTimer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    overlay.innerText = count;
+                } else {
+                    clearInterval(countdownTimer);
+                    overlay.style.display = 'none';
+                    startEAS();
+                }
+            }, 1000);
+        }
+
+        function startEAS() {
+            const region = document.getElementById('region-select').value;
+
+            const screen = document.getElementById('eas-screen');
+            screen.style.display = 'block';
+            document.getElementById('stop-btn').style.display = 'block';
+            document.getElementById('fullscreen-btn').style.display = 'block';
+
+            document.getElementById('alert-header').innerText = document.getElementById('alert-title').value;
+            document.getElementById('alert-sub-header').innerText = document.getElementById('alert-sub').value;
+            document.getElementById('main-alert-body').innerText = document.getElementById('alert-msg').value;
+
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); 
+            gainNode.connect(audioCtx.destination);
+
+            if (region === "US") {
+                playTone(853, 'sine');
+                playTone(960, 'sine');
+            } 
+            else if (region === "UK") {
+                playTone(1000, 'sine');
+            } 
+            else if (region === "JP") {
+                playTone(440, 'sine');
+                playTone(554.37, 'sine');
+                playTone(659.25, 'sine');
+                playTone(880, 'sine');
+            } 
+            else if (region === "EU") {
+                let primaryOsc = playTone(660, 'sawtooth');
+                let highToggle = false;
+                
+                sirenInterval = setInterval(() => {
+                    highToggle = !highToggle;
+                    primaryOsc.frequency.setValueAtTime(highToggle ? 880 : 660, audioCtx.currentTime);
+                }, 500);
+            }
+
+            setupFullscreenListeners();
+        }
+
+        function playTone(frequency, type) {
+            let osc = audioCtx.createOscillator();
+            osc.type = type;
+            osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            osc.connect(gainNode);
+            osc.start();
+            oscillators.push(osc);
+            return osc;
+        }
+
+        function stopEAS() {
+            oscillators.forEach(osc => {
+                try { osc.stop(); osc.disconnect(); } catch(e){}
+            });
+            oscillators = [];
+            
+            if (gainNode) { gainNode.disconnect(); }
+            if (sirenInterval) { clearInterval(sirenInterval); }
+
+            document.getElementById('eas-screen').style.display = 'none';
+            document.getElementById('stop-btn').style.display = 'none';
+            document.getElementById('fullscreen-btn').style.display = 'none';
+            document.getElementById('setup-panel').style.display = 'block';
+        }
+
+        function goFullscreen() {
+            const screen = document.getElementById('eas-screen');
+            if (screen.requestFullscreen) { screen.requestFullscreen(); } 
+            else if (screen.webkitRequestFullscreen) { screen.webkitRequestFullscreen(); }
+        }
+
+        function setupFullscreenListeners() {
+            const events = ['fullscreenchange', 'webkitfullscreenchange'];
+            events.forEach(evt => {
+                document.addEventListener(evt, () => {
+                    const isFull = document.fullscreenElement || document.webkitFullscreenElement;
+                    const stopBtn = document.getElementById('stop-btn');
+                    const fullBtn = document.getElementById('fullscreen-btn');
+                    if (isFull) {
+                        stopBtn.style.display = 'none';
+                        fullBtn.style.display = 'none';
+                    } else {
+                        stopBtn.style.display = 'block';
+                        fullBtn.style.display = 'block';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Rush Hour Hub - Grocery Check-Off</title>
+    
+    <style>
+        /* --- CSS Styling for Bubbly & Cozy Look --- */
+        :root {
+            --color-primary: #a8763e;
+            --color-secondary: #f0f0e0;
+            --color-accent: #6f5f40;
+            --color-light: #ffffff;
+            --color-success: #5c8b5c;
+            --color-delete: #d46a6a;
+            --color-info: #6495ed;
+            --color-checked-bg: #e6ffe6; /* Light green for checked items */
+            --color-checked-text: #888888;
+            --font-family-bubbly: "Comic Sans MS", "Chalkboard SE", cursive;
+            --base-font-size: 17px;
+        }
+        
+        body {
+            font-family: var(--font-family-bubbly);
+            margin: 0;
+            background-color: var(--color-secondary);
+            color: var(--color-accent);
+            line-height: 1.5;
+            font-size: var(--base-font-size);
+        }
+
+        /* --- Header and Navigation --- */
+        header {
+            background-color: var(--color-primary);
+            padding: 1.5em 0;
+            text-align: center;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.25);
+        }
+
+        header h1 {
+            margin-top: 0;
+            color: var(--color-light);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            font-size: 2.5em;
+        }
+
+        nav a {
+            color: var(--color-light);
+            margin: 0 1.5em;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 25px; 
+            transition: all 0.3s;
+            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.3);
+            font-size: 1em;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: var(--color-light);
+            color: var(--color-primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* --- Main Content & Pages --- */
+        main {
+            padding: 30px;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+        
+        .page-content {
+            background-color: var(--color-light);
+            padding: 30px;
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            display: none; 
+        }
+        
+        .page-content.active {
+            display: block; 
+        }
+
+        h2 {
+            border-bottom: 3px dashed var(--color-primary); 
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: var(--color-accent);
+            text-shadow: 0.5px 0.5px 0px #eee;
+            font-size: 1.8em;
+        }
+        
+        /* --- Forms, Inputs, and Buttons --- */
+        input[type="text"], textarea, select { 
+            padding: 12px;
+            border: 2px solid var(--color-primary); 
+            border-radius: 10px; 
+            font-family: var(--font-family-bubbly);
+            font-size: 1em;
+            height: 47px;
+            box-sizing: border-box;
+            margin-bottom: 10px; /* Added spacing for inputs */
+        }
+        
+        /* Grocery Form Layout */
+        #add-item-form {
+            display: grid;
+            grid-template-columns: 1.5fr 1.2fr 150px; 
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        #custom-category-input {
+            grid-column: 2;
+            display: none;
+            height: 47px;
+        }
+        
+        /* Recipe Form Layout */
+        #add-recipe-form {
+            display:none; 
+            flex-direction: column; 
+            margin-top: 20px; 
+            padding: 15px; 
+            background-color: #f7f7f7; 
+            border-radius: 10px;
+        }
+        #recipe-category-group {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr;
+            gap: 10px;
+            margin-bottom: 10px; 
+        }
+        #recipe-category-input {
+            display: none;
+            height: 47px;
+            margin-bottom: 0; /* Override margin for grid item */
+        }
+        #add-recipe-form textarea {
+            margin-bottom: 10px;
+        }
+
+
+        button {
+            padding: 10px 15px; 
+            background-color: var(--color-success);
+            color: white;
+            border: none;
+            border-radius: 15px; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em; 
+            box-shadow: 0 3px 0 var(--color-accent);
+            height: 47px;
+            line-height: 1.4;
+            transition: all 0.1s;
+        }
+        
+        button:active {
+            box-shadow: 0 1px 0 var(--color-accent);
+            transform: translateY(2px);
+        }
+        
+        /* Global Management Button Layout */
+        .page-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .page-controls button {
+            background-color: var(--color-info);
+            box-shadow: 0 3px 0 #3b5998;
+            height: auto;
+        }
+
+        /* --- Grocery List Styling --- */
+        .category-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 15px;
+        }
+        .category-group h3 {
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 5px;
+            margin-top: 0;
+            color: var(--color-primary);
+        }
+        
+        .category-group ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .category-group ul li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background-color: #fff9f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+
+        .item-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* Check/Delete Buttons in Grocery List */
+        .item-controls button {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            padding: 0;
+            line-height: 0;
+            font-size: 0.8em;
+            box-shadow: none;
+            background-color: #ccc;
+        }
+
+        .check-btn {
+            background-color: var(--color-success);
+        }
+        .check-btn:hover { background-color: #4a754a; }
+        .uncheck-btn {
+            background-color: var(--color-info);
+            font-size: 1.2em;
+        }
+        .delete-btn {
+            background-color: var(--color-delete);
+        }
+        .delete-btn:hover { background-color: #b85454; }
+
+        /* --- Checked Item Styles --- */
+        .category-group .checked-items h4 {
+            color: var(--color-checked-text);
+            border-top: 1px dotted var(--color-checked-text);
+            padding-top: 10px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        .category-group .checked-items ul li {
+            background-color: var(--color-checked-bg);
+            color: var(--color-checked-text);
+            text-decoration: line-through;
+            border: 1px dashed var(--color-success);
+        }
+        
+        /* Item text spacing */
+        .item-name {
+            flex-grow: 1;
+        }
+        
+        /* --- Recipe Card Styles (Unified Look) --- */
+        .recipe-category-group {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+        }
+
+        .recipe-category-group > h3 {
+            border-bottom: 3px solid var(--color-primary);
+            padding-bottom: 5px;
+            margin-top: 0;
+            color: var(--color-primary);
+        }
+        
+        .recipe-card {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: #f7f4ed; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1); 
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .recipe-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: var(--color-info);
+            font-weight: bold;
+        }
+        .recipe-meta span {
+            background-color: #e8f0ff;
+            padding: 4px 8px;
+            border-radius: 5px;
+        }
+        .my-recipe-card { 
+            border: 2px solid var(--color-primary); 
+            border-left: 8px solid var(--color-primary);
+            background-color: #fff9f0;
+        }
+        
+        /* --- CORE MODAL STYLES --- */
+        
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 10; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fff8e1; 
+            margin: 5% auto; 
+            padding: 30px;
+            border-radius: 25px; 
+            border: 5px solid var(--color-primary); 
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        /* --- CUSTOM ALERT MODAL STYLES --- */
+        #alertModal .modal-content {
+            margin: 15% auto;
+            max-width: 400px;
+            padding: 25px;
+            text-align: center;
+        }
+        #alertModal h3 {
+            border-bottom: none;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .alert-buttons button {
+            margin: 5px;
+            width: 100px;
+            height: auto;
+        }
+        .alert-buttons .confirm-delete { background-color: var(--color-delete); }
+        .alert-buttons .confirm-cancel, .alert-buttons .alert-ok { background-color: var(--color-success); }
+        
+        /* Recipe Modal Content Styling */
+        .modal-content h3 {
+            color: var(--color-primary);
+            font-size: 1.8em;
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .modal-content h4 {
+             color: var(--color-accent);
+             margin-top: 20px;
+             margin-bottom: 5px;
+             font-size: 1.2em;
+        }
+        .modal-content ol { padding-left: 25px; line-height: 1.8; }
+        .modal-content ul { list-style-type: none; padding: 0; margin-top: 0; }
+        .modal-content ul li { background-color: #fcefd0; padding: 8px; margin-bottom: 5px; border-radius: 5px; }
+
+
+        /* --- Category Manager Modal Specific Styles --- */
+        #categoryManagerModal .modal-content {
+            max-width: 500px;
+        }
+        
+        #custom-category-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        #custom-category-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fcefd0;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 5px solid var(--color-primary);
+            font-weight: bold;
+        }
+
+        #custom-category-list li button {
+            background-color: var(--color-delete);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            line-height: 0;
+            padding: 0;
+            box-shadow: none;
+            font-size: 1em;
+        }
+        
+        #custom-category-list li button:active {
+            transform: none;
+        }
+        
+        #categoryManagerModal .modal-footer {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⏱️ The Rush Hour Hub</h1>
+        <nav>
+            <a href="#grocery" id="nav-grocery">🛒 Grocery List</a>
+            <a href="#my-recipes" id="nav-my-recipes">📚 My Recipes</a>
+            <a href="#shared" id="nav-shared">🌍 Shared Recipes</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="grocery" class="page-content">
+            <h2>🛒 Your Weekly List</h2>
+            
+            <div class="page-controls" id="grocery-controls">
+                <button onclick="openCategoryManager('grocery')">⚙️ Manage Categories</button>
+                <button onclick="clearCompletedItems()" style="background-color: var(--color-delete); box-shadow: 0 3px 0 #943a3a;">🗑️ Clear Checked</button>
+            </div>
+
+            <form id="add-item-form">
+                <input type="text" id="new-item" placeholder="Item Name (e.g., Artisan Bread)" required>
+                <select id="item-category" required>
+                    </select>
+                <input type="text" id="custom-category-input" placeholder="Enter New Category Name">
+                <button type="submit">Add Item</button>
+            </form>
+            <div id="grocery-list-container">
+                </div>
+        </section>
+
+        <section id="my-recipes" class="page-content">
+            <h2>📚 Recipes You Love</h2>
+            <div class="page-controls" id="recipe-controls">
+                <button onclick="document.getElementById('add-recipe-form').style.display='flex'">+ Add New Recipe</button>
+                <button onclick="openCategoryManager('recipe')">⚙️ Manage Categories</button>
+            </div>
+
+            <form id="add-recipe-form">
+                <h3 style="color: var(--color-accent);">👩‍🍳 The Making Station</h3>
+                
+                <div id="recipe-category-group">
+                    <select id="recipe-category" required>
+                        </select>
+                    <input type="text" id="recipe-category-input" placeholder="Enter New Category Name">
+                </div>
+                <input type="text" id="recipe-title" placeholder="Recipe Title" required>
+                
+                <textarea id="recipe-ingredients" placeholder="Ingredients (one per line, e.g., 2 cups Flour)" rows="4" required></textarea>
+                <textarea id="recipe-instructions" placeholder="Step-by-step Instructions (one step per line)" rows="6" required></textarea>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit">Save Recipe</button>
+                    <button type="button" onclick="document.getElementById('add-recipe-form').style.display='none'; document.getElementById('add-recipe-form').reset(); hideRecipeCustomInput()" style="background-color: #999;">Cancel</button>
+                </div>
+            </form>
+
+            <div id="my-recipe-list">
+                </div>
+        </section>
+
+        <section id="shared" class="page-content">
+            <h2>🌍 Shared Recipes</h2>
+            <form id="search-form">
+                <input type="text" id="search-term" placeholder="Search By Name">
+                <button type="submit">Search</button>
+            </form>
+            
+            <div id="shared-recipe-results">
+                </div>
+        </section>
+    </main>
+    
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <div class="recipe-meta">
+                <span id="modalPrepTime"></span>
+                <span id="modalDifficulty"></span>
+            </div>
+            <h4>📝 Ingredients</h4>
+            <ul id="modalIngredientsList"></ul>
+            <h4>👩‍🍳 Instructions</h4>
+            <ol id="modalInstructionsList"></ol>
+            <button onclick="document.getElementById('recipeModal').style.display='none'" style="background-color: var(--color-delete); margin-top: 20px;">Close Recipe</button>
+        </div>
+    </div>
+    
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <h3 id="alertTitle"></h3>
+            <p id="alertMessage"></p>
+            <div class="alert-buttons">
+                </div>
+        </div>
+    </div>
+
+    <div id="categoryManagerModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: var(--color-info);">⚙️ Manage <span id="category-manager-title"></span> Categories</h3>
+            <p>Delete categories you no longer need. (Default categories cannot be removed.)</p>
+            <ul id="custom-category-list">
+                </ul>
+            <div class="modal-footer">
+                <button onclick="closeCategoryManager()" style="background-color: var(--color-primary); height: auto; padding: 10px 20px;">Done Managing</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT LOGIC ---
+        
+        // --- DOM Elements & Configuration ---
+        const groceryListContainerEl = document.getElementById('grocery-list-container');
+        const addItemForm = document.getElementById('add-item-form');
+        const newItemInput = document.getElementById('new-item');
+        const itemCategorySelect = document.getElementById('item-category');
+        const customCategoryInput = document.getElementById('custom-category-input');
+        
+        const myRecipeListEl = document.getElementById('my-recipe-list');
+        const addRecipeForm = document.getElementById('add-recipe-form');
+        const recipeCategorySelect = document.getElementById('recipe-category'); 
+        const recipeCategoryInput = document.getElementById('recipe-category-input'); 
+        
+        const sharedResultsEl = document.getElementById('shared-recipe-results');
+        const recipeModal = document.getElementById('recipeModal');
+        const alertModal = document.getElementById('alertModal');
+        const alertTitle = document.getElementById('alertTitle');
+        const alertMessage = document.getElementById('alertMessage');
+        const alertButtons = document.querySelector('.alert-buttons');
+        const categoryManagerModal = document.getElementById('categoryManagerModal');
+        const customCategoryListEl = document.getElementById('custom-category-list');
+        const categoryManagerTitle = document.getElementById('category-manager-title'); 
+        
+        let currentCategoryType = 'grocery'; // To track whether we are managing grocery or recipe categories
+
+        // --- Data Persistence and Initialization ---
+        
+        // GROCERY CATEGORY CONFIG
+        const DEFAULT_GROCERY_CATEGORIES = [
+            "Produce", "Meat & Seafood", "Dairy & Eggs", "Bakery", 
+            "Pantry (Canned/Dry)", "Frozen Foods", "Snacks", "Beverages", 
+            "Household & Cleaning", "Personal Care", "Other"
+        ];
+        
+        // RECIPE CATEGORY CONFIG
+        const DEFAULT_RECIPE_CATEGORIES = [
+            "Dinner", "Breakfast", "Dessert", "Quick Lunch", "Side Dish", "Baking", "Holiday"
+        ];
+
+        // --- Generic Data Helpers ---
+        const getItems = (key) => JSON.parse(localStorage.getItem(key) || '[]');
+        const saveItems = (key, items) => localStorage.setItem(key, JSON.stringify(items));
+        
+        // --- Category Management Functions ---
+        
+        const getCategoryConfig = (type) => {
+            if (type === 'grocery') {
+                return { 
+                    default: DEFAULT_GROCERY_CATEGORIES, 
+                    customKey: 'groceryCustomCategories',
+                    dataKey: 'groceryList'
+                };
+            } else if (type === 'recipe') {
+                return { 
+                    default: DEFAULT_RECIPE_CATEGORIES, 
+                    customKey: 'recipeCustomCategories',
+                    dataKey: 'myRecipes' 
+                };
+            }
+            return { default: [], customKey: '', dataKey: '' };
+        };
+        
+        const getCustomCategories = (type) => {
+            const config = getCategoryConfig(type);
+            return JSON.parse(localStorage.getItem(config.customKey) || '[]');
+        };
+
+        const saveCustomCategories = (type, categories) => {
+            const config = getCategoryConfig(type);
+            localStorage.setItem(config.customKey, JSON.stringify(categories));
+        };
+        
+        const getAllCategories = (type) => {
+            const config = getCategoryConfig(type);
+            const custom = getCustomCategories(type);
+            
+            const uniqueCustom = custom.filter(cat => 
+                !config.default.map(d => d.toLowerCase()).includes(cat.toLowerCase())
+            );
+            return config.default.concat(uniqueCustom).sort();
+        };
+
+        const saveCustomCategory = (category, type) => {
+            const currentCustom = getCustomCategories(type);
+            const capitalizedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+            
+            if (!currentCustom.map(c => c.toLowerCase()).includes(capitalizedCategory.toLowerCase())) {
+                currentCustom.push(capitalizedCategory);
+                saveCustomCategories(type, currentCustom);
+            }
+            return capitalizedCategory;
+        };
+        
+        const populateCategories = (type = 'grocery') => {
+            const categories = getAllCategories(type);
+            const selectEl = type === 'grocery' ? itemCategorySelect : recipeCategorySelect;
+            
+            selectEl.innerHTML = '<option value="" disabled selected>Select Category</option>';
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                selectEl.appendChild(option);
+            });
+            
+            const newOption = document.createElement('option');
+            newOption.value = 'CREATE_NEW';
+            newOption.textContent = '--- Create New Category ---';
+            selectEl.appendChild(newOption);
+        };
+        
+        // --- Grocery Category Event Listener ---
+        itemCategorySelect.addEventListener('change', () => {
+            if (itemCategorySelect.value === 'CREATE_NEW') {
+                customCategoryInput.style.display = 'block';
+                customCategoryInput.focus();
+            } else {
+                customCategoryInput.style.display = 'none';
+                customCategoryInput.value = '';
+            }
+        });
+        
+        // --- Recipe Category Event Listener ---
+        recipeCategorySelect.addEventListener('change', () => {
+            if (recipeCategorySelect.value === 'CREATE_NEW') {
+                recipeCategoryInput.style.display = 'block';
+                recipeCategoryInput.focus();
+            } else {
+                recipeCategoryInput.style.display = 'none';
+                recipeCategoryInput.value = '';
+            }
+        });
+        
+        const hideRecipeCustomInput = () => {
+             recipeCategoryInput.style.display = 'none';
+             recipeCategoryInput.value = '';
+        }
+        
+        // --- Generic Category Manager Modal Logic ---
+
+        const renderCustomCategoryManager = (type) => {
+            const customCategories = getCustomCategories(type);
+            const config = getCategoryConfig(type);
+            categoryManagerTitle.textContent = type === 'grocery' ? 'Grocery' : 'Recipe';
+            customCategoryListEl.innerHTML = '';
+
+            if (customCategories.length === 0) {
+                customCategoryListEl.innerHTML = '<li style="justify-content: center; color: #888;">No custom categories created yet.</li>';
+                return;
+            }
+
+            customCategories.forEach((category) => {
+                const isDefault = config.default.map(c => c.toLowerCase()).includes(category.toLowerCase());
+                
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${category} ${isDefault ? '(Default)' : ''}</span>
+                    ${!isDefault ? `<button class="delete-category-btn" data-category="${category}" data-type="${type}">X</button>` : ''}
+                `;
+                li.style.borderLeftColor = isDefault ? '#aaa' : 'var(--color-delete)';
+                customCategoryListEl.appendChild(li);
+            });
+        };
+
+        const openCategoryManager = (type) => {
+             currentCategoryType = type;
+             renderCustomCategoryManager(type); 
+             categoryManagerModal.style.display = 'block';
+        }
+        
+        const deleteCustomCategory = async (categoryName, type) => {
+            categoryManagerModal.style.display = 'none';
+            const config = getCategoryConfig(type);
+            const dataKey = config.dataKey;
+            
+            const confirmed = await showCozyNotification(
+                'Delete Category?',
+                `Are you sure you want to permanently delete the category "${categoryName}"? All ${type}s assigned to this category will revert to "Other."`,
+                true
+            );
+
+            if (confirmed) {
+                let customCategories = getCustomCategories(type);
+                customCategories = customCategories.filter(cat => cat !== categoryName);
+                saveCustomCategories(type, customCategories);
+
+                let items = getItems(dataKey);
+                items = items.map(item => {
+                    if (item.category === categoryName) {
+                        item.category = 'Other'; 
+                    }
+                    return item;
+                });
+                saveItems(dataKey, items);
+
+                if (type === 'grocery') {
+                    populateCategories('grocery');
+                    renderGroceryList();
+                } else if (type === 'recipe') {
+                    populateCategories('recipe');
+                    renderMyRecipes();
+                }
+                
+                showCozyNotification('Category Removed! 💔', `"${categoryName}" and all associated items have been re-categorized to "Other."`);
+            } 
+            
+            // Reopen modal if confirmation was cancelled
+            if (!confirmed) {
+                categoryManagerModal.style.display = 'block';
+            }
+        };
+
+        customCategoryListEl.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-category-btn')) {
+                const category = e.target.getAttribute('data-category');
+                const type = e.target.getAttribute('data-type');
+                deleteCustomCategory(category, type);
+            }
+        });
+        
+        const closeCategoryManager = () => {
+            categoryManagerModal.style.display = 'none';
+            populateCategories('grocery'); 
+            populateCategories('recipe');
+        }
+        
+        // --- Custom Alert/Confirm Logic ---
+        
+        const showCozyNotification = (title, message, isConfirm = false) => {
+            return new Promise((resolve) => {
+                alertTitle.textContent = title;
+                alertMessage.textContent = message;
+                alertButtons.innerHTML = '';
+                
+                const close = (result) => {
+                    alertModal.style.display = 'none';
+                    resolve(result);
+                };
+
+                if (isConfirm) {
+                    const confirmBtn = document.createElement('button');
+                    confirmBtn.textContent = 'Yes, Proceed';
+                    confirmBtn.classList.add('confirm-delete');
+                    confirmBtn.addEventListener('click', () => close(true), { once: true });
+                    
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.classList.add('confirm-cancel');
+                    cancelBtn.addEventListener('click', () => close(false), { once: true });
+
+                    alertButtons.appendChild(cancelBtn);
+                    alertButtons.appendChild(confirmBtn);
+                } else {
+                    const okBtn = document.createElement('button');
+                    okBtn.textContent = 'Got It!';
+                    okBtn.classList.add('alert-ok');
+                    okBtn.addEventListener('click', () => close(true), { once: true });
+                    
+                    alertButtons.appendChild(okBtn);
+                }
+
+                alertModal.style.display = 'block';
+            });
+        };
+        
+        // --- Navigation Logic ---
+        
+        const changePage = (hash) => {
+            const targetId = hash.substring(1) || 'grocery';
+            
+            document.querySelectorAll('nav a').forEach(link => link.classList.remove('active'));
+            document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
+
+            const targetPage = document.getElementById(targetId);
+            const targetNav = document.getElementById(`nav-${targetId}`);
+
+            if (targetPage && targetNav) {
+                targetPage.classList.add('active');
+                targetNav.classList.add('active');
+                window.location.hash = hash;
+            } else {
+                 document.getElementById('grocery').classList.add('active'); 
+                 document.getElementById('nav-grocery').classList.add('active');
+                 window.location.hash = '#grocery';
+            }
+        };
+
+        window.addEventListener('hashchange', () => changePage(window.location.hash));
+
+
+        // --- GROCERY LIST LOGIC ---
+
+        const renderGroceryList = () => {
+            const items = getItems('groceryList');
+            groceryListContainerEl.innerHTML = '';
+
+            if (items.length === 0) {
+                groceryListContainerEl.innerHTML = '<p style="font-style: italic; color: #999; margin-top: 20px;">Your categorized list is empty. Add something!</p>';
+                return;
+            }
+
+            const groupedItems = items.reduce((acc, item) => {
+                if (typeof item.checked === 'undefined') item.checked = false; 
+                
+                const category = item.category || 'Other';
+                if (!acc[category]) {
+                    acc[category] = { unchecked: [], checked: [] };
+                }
+                if (item.checked) {
+                    acc[category].checked.push(item);
+                } else {
+                    acc[category].unchecked.push(item);
+                }
+                return acc;
+            }, {});
+
+            const allCategories = getAllCategories('grocery').concat(
+                Object.keys(groupedItems).filter(c => !getAllCategories('grocery').includes(c))
+            );
+
+            allCategories.forEach(category => {
+                const groupData = groupedItems[category];
+                
+                if (groupData && (groupData.unchecked.length > 0 || groupData.checked.length > 0)) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.classList.add('category-group');
+                    groupDiv.innerHTML = `<h3>${category}</h3>`;
+
+                    // 1. Unchecked List (Items to Buy)
+                    if (groupData.unchecked.length > 0) {
+                        const ul = document.createElement('ul');
+                        groupData.unchecked.forEach((item, index) => {
+                            // Find the index in the flat list for control buttons
+                            const flatIndex = items.findIndex(i => i.name === item.name && i.category === item.category && i.checked === item.checked); 
+                            
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                                <span class="item-name">${item.name}</span>
+                                <div class="item-controls">
+                                    <button class="check-btn" data-index="${flatIndex}" title="Mark as Purchased">✓</button>
+                                    <button class="delete-btn" data-index="${flatIndex}" title="Delete Item">X</button>
+                                </div>
+                            `;
+                            ul.appendChild(li);
+                        });
+                        groupDiv.appendChild(ul);
+                    }
+                    
+                    // 2. Checked List (Purchased Items)
+                    if (groupData.checked.length > 0) {
+                        const checkedDiv = document.createElement('div');
+                        checkedDiv.classList.add('checked-items');
+                        checkedDiv.innerHTML = '<h4>Completed Items</h4>';
+                        
+                        const checkedUl = document.createElement('ul');
+                        groupData.checked.forEach((item) => {
+                            // Find the index in the flat list for control buttons
+                            const flatIndex = items.findIndex(i => i.name === item.name && i.category === item.category && i.checked === item.checked); 
+                            
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                                <span class="item-name">${item.name}</span>
+                                <div class="item-controls">
+                                    <button class="uncheck-btn" data-index="${flatIndex}" title="Unmark Item">↩️</button>
+                                    <button class="delete-btn" data-index="${flatIndex}" title="Delete Item">X</button>
+                                </div>
+                            `;
+                            checkedUl.appendChild(li);
+                        });
+                        checkedDiv.appendChild(checkedUl);
+                        groupDiv.appendChild(checkedDiv);
+                    }
+
+                    groceryListContainerEl.appendChild(groupDiv);
+                }
+            });
+        };
+
+        const addGroceryItem = (e) => {
+            e.preventDefault();
+            const item = newItemInput.value.trim();
+            let category = itemCategorySelect.value;
+
+            if (customCategoryInput.style.display === 'block' && customCategoryInput.value.trim() !== '') {
+                category = saveCustomCategory(customCategoryInput.value.trim(), 'grocery');
+            } else if (customCategoryInput.style.display === 'block' && customCategoryInput.value.trim() === '') {
+                showCozyNotification('Hold On!', 'Please enter a name for your new category.');
+                return;
+            } else if (!category) {
+                showCozyNotification('Selection Required', 'Please select a category for your item.');
+                return;
+            }
+
+            if (item) {
+                const items = getItems('groceryList');
+                items.push({ name: item, category: category, checked: false }); 
+                saveItems('groceryList', items);
+                
+                newItemInput.value = '';
+                customCategoryInput.value = '';
+                customCategoryInput.style.display = 'none';
+                
+                populateCategories('grocery'); 
+                renderGroceryList();
+                showCozyNotification('Grocery Added! 🥕', `"${item}" was added to the "${category}" list.`);
+            }
+        };
+        
+        const toggleCheckedStatus = (index) => {
+            const items = getItems('groceryList');
+            if (index >= 0 && index < items.length) {
+                items[index].checked = !items[index].checked;
+                saveItems('groceryList', items);
+                renderGroceryList();
+            }
+        };
+
+        const deleteGroceryItem = async (e, index) => {
+            const items = getItems('groceryList');
+            const itemToDelete = items[index].name;
+
+            const confirmed = await showCozyNotification(
+                'Delete Item?', 
+                `Are you sure you want to remove "${itemToDelete}" from your list?`, 
+                true
+            );
+            
+            if (confirmed) {
+                if (index >= 0 && index < items.length) {
+                    items.splice(index, 1);
+                    saveItems('groceryList', items);
+                    renderGroceryList();
+                    showCozyNotification('Removed! 👋', `${itemToDelete} has been successfully deleted.`);
+                }
+            }
+        };
+
+        const clearCompletedItems = async () => {
+            const items = getItems('groceryList');
+            const completedCount = items.filter(item => item.checked).length;
+            
+            if (completedCount === 0) {
+                showCozyNotification('Nothing to Clear', 'You haven\'t checked off any items yet!');
+                return;
+            }
+
+            const confirmed = await showCozyNotification(
+                'Clear Completed?',
+                `Are you sure you want to permanently delete all ${completedCount} checked items?`,
+                true
+            );
+
+            if (confirmed) {
+                const remainingItems = items.filter(item => !item.checked);
+                saveItems('groceryList', remainingItems);
+                renderGroceryList();
+                showCozyNotification('List Cleaned! ✨', `${completedCount} items removed.`);
+            }
+        }
+
+
+        addItemForm.addEventListener('submit', addGroceryItem);
+        groceryListContainerEl.addEventListener('click', (e) => {
+            const target = e.target;
+            const index = target.getAttribute('data-index');
+
+            if (index !== null) {
+                if (target.classList.contains('check-btn') || target.classList.contains('uncheck-btn')) {
+                    toggleCheckedStatus(parseInt(index));
+                } else if (target.classList.contains('delete-btn')) {
+                    deleteGroceryItem(e, parseInt(index));
+                }
+            }
+        });
+
+
+        // --- RECIPE LOGIC ---
+
+        const showRecipeDetails = (recipe) => {
+            document.getElementById('modalTitle').textContent = recipe.title;
+            document.getElementById('modalPrepTime').textContent = `⏱️ Prep/Cook: ${recipe.prepTime || 'N/A'}`;
+            document.getElementById('modalDifficulty').textContent = `⭐ Difficulty: ${recipe.difficulty || 'N/A'}`;
+
+            const ingredientsList = document.getElementById('modalIngredientsList');
+            ingredientsList.innerHTML = '';
+            recipe.ingredients.split('\n').filter(ing => ing.trim() !== '').forEach(ing => {
+                const li = document.createElement('li');
+                li.textContent = ing.trim();
+                ingredientsList.appendChild(li);
+            });
+            
+            const instructionsList = document.getElementById('modalInstructionsList');
+            instructionsList.innerHTML = '';
+            const steps = recipe.instructions.split(/[\r\n]+|(?=\d+\.\s)/g).filter(s => s.trim() !== '');
+
+            steps.forEach(step => {
+                const li = document.createElement('li');
+                li.textContent = step.replace(/^\d+\.\s*/, '').trim(); 
+                instructionsList.appendChild(li);
+            });
+
+            recipeModal.style.display = 'block';
+        };
+
+
+        const renderMyRecipes = () => {
+            const recipes = getItems('myRecipes');
+            myRecipeListEl.innerHTML = ''; 
+
+            if (recipes.length === 0) {
+                myRecipeListEl.innerHTML = '<p style="font-style: italic; color: #999;">You haven\'t saved any personal recipes yet. Get cooking!</p>';
+                return;
+            }
+            
+            // Group recipes by category
+            const groupedRecipes = recipes.reduce((acc, recipe) => {
+                const category = recipe.category || 'Other'; 
+                if (!acc[category]) {
+                    acc[category] = [];
+                }
+                acc[category].push(recipe);
+                return acc;
+            }, {});
+            
+            const allCategories = getAllCategories('recipe').concat(
+                Object.keys(groupedRecipes).filter(c => !getAllCategories('recipe').includes(c))
+            );
+            
+            allCategories.forEach(category => {
+                const recipesInCategory = groupedRecipes[category];
+                
+                if (recipesInCategory && recipesInCategory.length > 0) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.classList.add('recipe-category-group');
+                    groupDiv.innerHTML = `<h3>${category} Recipes</h3>`;
+                    
+                    recipesInCategory.forEach((recipe, index) => {
+                        // Find the index in the *flat* list for deletion
+                        const flatIndex = recipes.findIndex(r => r.title === recipe.title && r.category === recipe.category);
+                        
+                        const card = document.createElement('div');
+                        card.classList.add('recipe-card', 'my-recipe-card'); 
+                        
+                        const prepTime = recipe.prepTime || 'User Added';
+                        const difficulty = recipe.difficulty || 'User Added';
+                        const summaryIngredient = recipe.ingredients.split('\n')[0].replace(/\([^)]+\)/g, '').trim();
+
+                        card.innerHTML = `
+                            <h3>${recipe.title}</h3>
+                            <div class="recipe-meta">
+                                <span>⏱️ Prep/Cook: ${prepTime}</span>
+                                <span>⭐ Difficulty: ${difficulty}</span>
+                            </div>
+                            <p style="margin-top: 5px;">Ingredients: ${summaryIngredient}...</p>
+                            <button class="view-recipe-btn" data-index="${flatIndex}" style="background-color: var(--color-accent);">View Recipe</button>
+                            <button class="delete-recipe-btn" data-index="${flatIndex}" style="background-color: var(--color-delete); margin-left: 10px;">Delete</button>
+                        `;
+                        groupDiv.appendChild(card);
+                    });
+                    
+                    myRecipeListEl.appendChild(groupDiv);
+                }
+            });
+        };
+
+        const addRecipe = (e) => {
+            e.preventDefault();
+            const title = document.getElementById('recipe-title').value.trim();
+            const ingredients = document.getElementById('recipe-ingredients').value.trim();
+            const instructions = document.getElementById('recipe-instructions').value.trim();
+            let category = recipeCategorySelect.value; 
+            
+            if (recipeCategoryInput.style.display === 'block' && recipeCategoryInput.value.trim() !== '') {
+                category = saveCustomCategory(recipeCategoryInput.value.trim(), 'recipe');
+            } else if (recipeCategoryInput.style.display === 'block' && recipeCategoryInput.value.trim() === '') {
+                showCozyNotification('Hold On!', 'Please enter a name for your new recipe category.');
+                return;
+            } else if (!category) {
+                showCozyNotification('Selection Required', 'Please select a category for your recipe.');
+                return;
+            }
+
+
+            if (title && ingredients && instructions) {
+                const recipes = getItems('myRecipes');
+                
+                recipes.push({ 
+                    title, 
+                    ingredients, 
+                    instructions, 
+                    category: category, 
+                    prepTime: 'User Added',
+                    difficulty: 'User Added'
+                });
+                
+                saveItems('myRecipes', recipes);
+
+                addRecipeForm.reset();
+                addRecipeForm.style.display = 'none';
+                hideRecipeCustomInput(); 
+                
+                populateCategories('recipe'); 
+                renderMyRecipes();
+                
+                showCozyNotification('Recipe Saved! 📖', `Your recipe for "${title}" was saved under "${category}".`);
+            }
+        };
+
+        const deleteMyRecipe = async (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            const recipes = getItems('myRecipes');
+            const recipeTitle = recipes[index].title;
+
+            const confirmed = await showCozyNotification(
+                'Confirm Deletion', 
+                `Are you sure you want to permanently delete the recipe for "${recipeTitle}"? This cannot be undone.`, 
+                true
+            );
+            
+            if (confirmed) {
+                if (index >= 0 && index < recipes.length) {
+                    recipes.splice(index, 1);
+                    saveItems('myRecipes', recipes);
+                    renderMyRecipes();
+                    showCozyNotification('Deleted! 🗑️', `${recipeTitle} has been removed.`);
+                }
+            }
+        };
+        
+        myRecipeListEl.addEventListener('click', (e) => {
+            if (e.target.classList.contains('view-recipe-btn')) {
+                const index = e.target.getAttribute('data-index');
+                const recipes = getItems('myRecipes');
+                showRecipeDetails(recipes[index]);
+            } else if (e.target.classList.contains('delete-recipe-btn')) {
+                deleteMyRecipe(e);
+            }
+        });
+
+        addRecipeForm.addEventListener('submit', addRecipe); 
+
+
+        // Shared Recipes Data 
+        const sharedRecipesData = [
+            { id: 101, title: "Grandma's Cinnamon Rolls", ingredients: "Yeast (1 packet)\nFlour (3 cups)\nMilk (1 cup)\nButter (1/2 cup)\nBrown Sugar (1 cup)\nCinnamon (2 tbsp)", instructions: "1. Activate the Yeast: Dissolve yeast and a pinch of sugar in warm milk; let stand 5-10 minutes until foamy. 2. Prepare the Dough: In a large bowl, combine flour, remaining sugar, salt, and melted butter. Add the yeast mixture and mix until a soft dough forms. Knead for 5 minutes. 3. First Rise: Place dough in a greased bowl, cover, and let rise in a warm spot for 1 hour, until doubled in size. 4. Roll and Fill: Punch down the dough. Roll it into a 12x18 inch rectangle. Spread softened butter, brown sugar, and cinnamon evenly over the surface. 5. Cut and Bake: Roll the rectangle tightly into a log. Cut into 12 even slices. Place in a greased pan and bake at 375°F (190°C) for 20-25 minutes, until golden.", prepTime: "60 min", difficulty: "Medium", category: "Baking" },
+            { id: 102, title: "Cozy Lentil Soup", ingredients: "Lentils (1 cup)\nCarrots (2 chopped)\nCelery (2 ribs chopped)\nVegetable Broth (6 cups)\nThyme (1 tsp)\nBay Leaf (1)", instructions: "1. Sauté Aromatics: In a large pot, heat olive oil over medium heat. Add chopped carrots, celery, and a diced onion (optional). Cook until softened, about 5-7 minutes. 2. Add Ingredients: Stir in the lentils, broth, thyme, and bay leaf. Bring the mixture to a boil. 3. Simmer: Reduce heat to low, cover, and simmer for 25-30 minutes, or until lentils are tender. Season generously with salt and pepper. 4. Serve: Remove the bay leaf before serving. Garnish with a drizzle of olive oil or fresh parsley.", prepTime: "30 min", difficulty: "Easy", category: "Quick Lunch" },
+            { id: 107, title: "Homemade Pizza Dough", ingredients: "Flour (3 cups)\nYeast (2 1/4 tsp)\nWarm Water (1 cup)\nOlive Oil (2 tbsp)\nSalt (1 tsp)", instructions: "1. Mix Yeast: Dissolve yeast and 1 tsp sugar in warm water. Let sit for 5 minutes. 2. Combine: In a large bowl, whisk together flour and salt. Pour in the olive oil and yeast mixture. Mix until a shaggy dough forms. 3. Knead: Turn the dough out onto a lightly floured surface. Knead for 8-10 minutes until smooth and elastic. 4. Rise: Place the dough in a greased bowl, turning once to coat. Cover and let rise in a warm place for 1.5 to 2 hours, or until doubled. 5. Bake Prep: Punch down the dough and stretch it onto your pizza pan. Add your favorite toppings and bake according to topping instructions.", prepTime: "120 min", difficulty: "Hard", category: "Baking" },
+            { id: 103, title: "Spicy Roasted Brussels Sprouts", ingredients: "Brussels Sprouts (1 lb)\nOlive Oil (2 tbsp)\nChili Flakes (1/2 tsp)\nSalt and Pepper", instructions: "1. Preheat & Prep: Preheat oven to 400°F (200°C). Halve the Brussels sprouts. 2. Season: Toss the sprouts vigorously in a bowl with olive oil, chili flakes, salt, and pepper until fully coated. 3. Roast: Spread the sprouts in a single layer on a baking sheet. Roast for 20 minutes, then flip them and roast for another 10-15 minutes until crispy and browned. Serve immediately.", prepTime: "20 min", difficulty: "Easy", category: "Side Dish" },
+            { id: 104, title: "Ultimate Chocolate Chip Cookies", ingredients: "All-Purpose Flour (2 1/4 cups)\nBaking Soda (1 tsp)\nSalt (1 tsp)\nUnsalted Butter (1 cup, softened)\nGranulated Sugar (3/4 cup)\nBrown Sugar (3/4 cup, packed)\nVanilla Extract (1 tsp)\nEggs (2 large)\nChocolate Chips (2 cups)", instructions: "1. Prep: Preheat oven to 375°F (190°C). Line baking sheets with parchment paper. 2. Dry Ingredients: Combine flour, baking soda, and salt in a small bowl. Set aside. 3. Cream: In a large bowl, beat the softened butter, granulated sugar, and brown sugar until light and fluffy. 4. Wet Ingredients: Beat in the vanilla extract and then add the eggs, one at a time, mixing well after each addition. 5. Combine: Gradually mix in the dry ingredients, then fold in the chocolate chips using a wooden spoon. 6. Bake: Drop rounded tablespoons of dough onto the prepared sheets. Bake for 9 to 11 minutes, or until edges are golden brown.", prepTime: "40 min", difficulty: "Medium", category: "Dessert" },
+            { id: 105, title: "One-Pan Lemon Chicken", ingredients: "Chicken Thighs (4 bone-in, skin-on)\nLemon (1 sliced)\nSmall Potatoes (1 lb, quartered)\nFresh Rosemary (2 sprigs)\nOlive Oil (3 tbsp)\nSalt and Pepper", instructions: "1. Prep Oven: Preheat oven to 425°F (220°C). 2. Season: Toss potatoes and rosemary with 1 tbsp olive oil, salt, and pepper directly on the baking sheet. Push them to one side. 3. Chicken: Pat the chicken thighs dry. Rub them with the remaining 2 tbsp olive oil and season generously. Place them skin-side up on the other side of the pan. Place lemon slices on top of and around the chicken. 4. Roast: Bake for 35-40 minutes, or until chicken reaches an internal temperature of 165°F (74°C) and the skin is golden brown.", prepTime: "50 min", difficulty: "Easy", category: "Dinner" },
+            { id: 106, title: "Fancy Avocado Toast", ingredients: "Sourdough Bread (1 slice)\nAvocado (1/2 mashed)\nEverything Bagel Seasoning (1 tsp)\nRed Pepper Flakes (pinch)\nSea Salt", instructions: "1. Toast: Toast the slice of sourdough bread to your desired crispness. 2. Mash: In a small bowl, mash the avocado with a fork and season lightly with sea salt. 3. Assemble: Spread the mashed avocado evenly over the warm toast. 4. Top: Sprinkle generously with Everything Bagel Seasoning and a pinch of red pepper flakes for heat. Serve immediately.", prepTime: "10 min", difficulty: "Very Easy", category: "Breakfast" }
+        ];
+
+        const renderSharedRecipes = (recipes = sharedRecipesData) => {
+            sharedResultsEl.innerHTML = '';
+
+            if (recipes.length === 0) {
+                sharedResultsEl.innerHTML = '<p style="font-style: italic; color: #999;">Sorry, no shared recipes matched your search.</p>';
+                return;
+            }
+
+            recipes.forEach(recipe => {
+                const card = document.createElement('div');
+                card.classList.add('recipe-card', 'shared-card');
+                
+                const summaryIngredient = recipe.ingredients.split('\n')[0].replace(/\([^)]+\)/g, '').trim();
+
+                card.innerHTML = `
+                    <h3>${recipe.title}</h3>
+                    <div class="recipe-meta">
+                        <span>⏱️ Prep/Cook: ${recipe.prepTime}</span>
+                        <span>⭐ Difficulty: ${recipe.difficulty}</span>
+                        <span>🏷️ Category: ${recipe.category || 'N/A'}</span>
+                    </div>
+                    <p style="margin-top: 5px;">Key Ingredients: ${summaryIngredient}...</p>
+                    <button class="view-shared-recipe-btn" data-id="${recipe.id}" style="background-color: var(--color-accent);">View Full Recipe</button>
+                    <button class="save-shared-btn" data-id="${recipe.id}" style="background-color: var(--color-primary); margin-left: 10px;">Save to My Recipes</button>
+                `;
+                sharedResultsEl.appendChild(card);
+            });
+        };
+        
+        sharedResultsEl.addEventListener('click', (e) => {
+            if (e.target.classList.contains('view-shared-recipe-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                const recipe = sharedRecipesData.find(r => r.id === id);
+                if (recipe) {
+                    showRecipeDetails(recipe);
+                }
+            } else if (e.target.classList.contains('save-shared-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                saveSharedRecipe(id);
+            }
+        });
+
+        const saveSharedRecipe = (id) => {
+            const recipeToSave = sharedRecipesData.find(r => r.id === id);
+            
+            if (recipeToSave) {
+                const myRecipes = getItems('myRecipes');
+                if (myRecipes.some(r => r.title === recipeToSave.title)) {
+                    showCozyNotification('Already Saved!', `The recipe for "${recipeToSave.title}" is already in your saved recipes!`);
+                    return;
+                }
+                
+                myRecipes.push({
+                    title: recipeToSave.title,
+                    ingredients: recipeToSave.ingredients, 
+                    instructions: recipeToSave.instructions,
+                    prepTime: recipeToSave.prepTime,
+                    difficulty: recipeToSave.difficulty,
+                    category: recipeToSave.category || 'Other' 
+                });
+                saveItems('myRecipes', myRecipes);
+                renderMyRecipes();
+                showCozyNotification('Recipe Saved! 🥳', `"${recipeToSave.title}" was successfully saved to My Recipes!`);
+            }
+        };
+
+        const searchSharedRecipes = (e) => {
+            e.preventDefault();
+            const searchTerm = document.getElementById('search-term').value.trim().toLowerCase();
+
+            if (!searchTerm) {
+                renderSharedRecipes(sharedRecipesData); 
+                return;
+            }
+
+            const filtered = sharedRecipesData.filter(recipe => 
+                recipe.title.toLowerCase().includes(searchTerm) || 
+                recipe.ingredients.toLowerCase().includes(searchTerm) ||
+                recipe.difficulty.toLowerCase().includes(searchTerm) ||
+                (recipe.category && recipe.category.toLowerCase().includes(searchTerm))
+            );
+            
+            renderSharedRecipes(filtered);
+        };
+
+        document.getElementById('search-form').addEventListener('submit', searchSharedRecipes);
+
+
+        // --- Initialization ---
+
+        const initializeData = () => {
+             // 1. Ensure grocery items have 'checked' status
+            let groceryItems = getItems('groceryList');
+            let updatedGrocery = false;
+            groceryItems = groceryItems.map(item => {
+                if (typeof item.checked === 'undefined') {
+                    item.checked = false;
+                    updatedGrocery = true;
+                }
+                return item;
+            });
+            if (updatedGrocery) saveItems('groceryList', groceryItems);
+            
+            // 2. Ensure recipes have a 'category' status
+            let recipes = getItems('myRecipes');
+            let updatedRecipes = false;
+            recipes = recipes.map(recipe => {
+                if (typeof recipe.category === 'undefined') {
+                    recipe.category = 'Other';
+                    updatedRecipes = true;
+                }
+                return recipe;
+            });
+            if (updatedRecipes) saveItems('myRecipes', recipes);
+            
+            // 3. Populate and Render
+            populateCategories('grocery'); 
+            populateCategories('recipe'); 
+            renderGroceryList();
+            renderMyRecipes();
+            renderSharedRecipes();
+            changePage(window.location.hash);
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeData);
+
+        // Close modal when clicking outside of it (for all modals)
+        window.onclick = function(event) {
+          if (event.target == recipeModal) {
+            recipeModal.style.display = "none";
+          }
+          if (event.target == alertModal) {
+            alertModal.style.display = "none";
+          }
+          if (event.target == categoryManagerModal) {
+            closeCategoryManager();
+          }
+        }
+
+    </script>
+</body>
+</html>

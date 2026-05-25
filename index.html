@@ -53,39 +53,57 @@
     <h1>APP CHOSER</h1>
     
     <div class="grid">
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/ReadingCalender/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/ReadingCalender/">
             📅 Reading Calendar *
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/BlockyPuzzle/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/BlockyPuzzle/">
             🧩 Block Blast
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/PixelBird/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/PixelBird/">
             🐦 Flappy Bird
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/SO/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/SO/">
             🛒 Supermarket Organizer *
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/ProjectOngaku/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/ProjectOngaku/">
             🎵 Project Ongaku
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/TCG/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/TCG/">
             🃏 TCG *
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/SimplySpend/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/SimplySpend/">
             💰 Simply Spend
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/EASmaker/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/EASmaker/">
             🚨 EAS Maker
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/SketchBook/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/SketchBook/">
             🎨 Sketch Book
         </a>
-        <a class="card" href="https://seamlessswimmingcleaning.github.io/TheRushHourHub/" target="_self">
+        <a class="card" href="https://seamlessswimmingcleaning.github.io/TheRushHourHub/">
             🍳 The Rush Hour Hub *
         </a>
     </div>
     
     <p class="text"> * IF THE APP HAS A STAR ITS NOT COMPATIBLE WITH IPHONE * </p>
+
+    <script>
+        (function(document, navigator, standalone) {
+            if ((standalone in navigator) && navigator[standalone]) {
+                var curnode, location = document.location;
+                document.addEventListener('click', function(e) {
+                    curnode = e.target;
+                    while (curnode.nodeName !== 'A' && curnode.nodeName !== 'HTML') {
+                        curnode = curnode.parentNode;
+                    }
+                    if ('href' in curnode && curnode.href.indexOf('http') !== -1) {
+                        e.preventDefault();
+                        location.href = curnode.href;
+                    }
+                }, false);
+            }
+        })(document, window.navigator, 'standalone');
+    </script>
 
 </body>
 </html>
